@@ -45,6 +45,8 @@ export default class App extends React.Component{
     // this.fetchWeather = this.fetchWeather.bind(this)
   }
  fetchWeather = async() =>{
+  if(this.state.location?.length <= 2) 
+    return this.setState({weather: {}})
     try {
       this.setState({isLoading : true})
       console.log(this.state.location);
@@ -68,13 +70,25 @@ export default class App extends React.Component{
       const weatherData = await weatherRes.json();
       this.setState({weather : weatherData.daily});
     } catch (err) {
-      console.log(err);
+      console.error(err);
     } finally {
       this.setState({isLoading:false})
     }
   }
 handleClick = (e) => {
   this.setState({ location: e.target.value })
+}
+//useEffect with []
+componentDidMount(){
+  // this.fetchWeather()
+  this.setState({location: localStorage.getItem('location') || ""})
+}
+//useEffect with [location]
+componentDidUpdate(prevProps, prevState){
+  if(this.state.location !== prevState.location)
+  this.fetchWeather()
+
+  localStorage.setItem('location',this.state.location)
 }
   render(){
     return (
@@ -83,7 +97,7 @@ handleClick = (e) => {
         <div>
           <Input location={this.state.location} handleClick={this.handleClick}/>
         </div>
-        <button onClick={this.fetchWeather}>Get weather</button>
+        {/* <button onClick={this.fetchWeather}>Get weather</button> */}
         {this.state.isLoading && <p>Loading...</p>}
 
         {this.state.weather?.weathercode && (
@@ -98,6 +112,9 @@ handleClick = (e) => {
 }
 
 class Weather extends React.Component{
+  componentWillUnmount(){
+    console.log('unmounted');
+  }
   render(){
     console.log(this.props);
     const {
